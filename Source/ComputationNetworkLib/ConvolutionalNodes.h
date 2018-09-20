@@ -216,7 +216,7 @@ protected:
     {
         // If kernel has a lower rank than the input then the remaining dimensions are to be reduced over.
         size_t filterRank = m_kernelShape.size();
-        if (groups > 0)
+        if (groups > 1)
 		{
             --filterRank;
 		}
