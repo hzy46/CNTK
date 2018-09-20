@@ -216,6 +216,7 @@ protected:
     {
         // If kernel has a lower rank than the input then the remaining dimensions are to be reduced over.
         size_t filterRank = m_kernelShape.size();
+		// We pass the reduction dimension in m_kernelShape when using group convolution, thus filterRank should be m_kernelShape.size() - 1.
         if (groups > 1)
 		{
             --filterRank;
@@ -346,7 +347,7 @@ public:
     ConvolutionNode(const ScriptableObjects::IConfigRecordPtr configp)
         : ConvolutionNode(configp->Get(L"deviceId"), L"<placeholder>", configp->Get(L"kernelShape"), configp->Get(L"mapCount"), configp->Get(L"strideShape"),
                           configp->Get(L"dimSharing"), configp->Get(L"dimPadding"), configp->Get(L"dimPadLower"), configp->Get(L"dimPadUpper"),
-                          configp->Get(L"transpose"), configp->Get(L"dimOutputShape"), ImageLayoutKindFrom(configp->Get(L"imageLayout")), configp->Get(L"maxTempMemSizeInSamples"), configp->Get(L"dimDilation"), configp->Get(L"groups"))
+                          configp->Get(L"transpose"), configp->Get(L"dimOutputShape"), ImageLayoutKindFrom(configp->Get(L"imageLayout")), configp->Get(L"maxTempMemSizeInSamples"), configp->Get(L"dimDilation"), (*configp)(L"groups", 1))
     {
         AttachInputsFromConfig(configp, GetExpectedNumInputs());
     }
