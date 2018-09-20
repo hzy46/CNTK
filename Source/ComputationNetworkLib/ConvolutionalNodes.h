@@ -212,10 +212,14 @@ protected:
     }
 
     // infer reduction dimensions if not given
-    void InferReductionDims(const TensorShape& inputShape, const TensorShape& fromShape)
+    void InferReductionDims(const TensorShape& inputShape, const TensorShape& fromShape, const size_t& groups = 1)
     {
         // If kernel has a lower rank than the input then the remaining dimensions are to be reduced over.
         size_t filterRank = m_kernelShape.size();
+        if (groups > 0)
+		{
+            --filterRank;
+		}
         FixTensorShape(filterRank, inputShape.size(), m_kernelShape, 1,     fromShape); // convolve over red dim; pool over 1
         FixTensorShape(filterRank, inputShape.size(), m_stride,      1,     fromShape); // stride for reduction dims is red dim or 1
         FixVectorShape(filterRank, inputShape.size(), m_autoPad,     false);            // no padding for reduction dims
@@ -342,7 +346,7 @@ public:
     ConvolutionNode(const ScriptableObjects::IConfigRecordPtr configp)
         : ConvolutionNode(configp->Get(L"deviceId"), L"<placeholder>", configp->Get(L"kernelShape"), configp->Get(L"mapCount"), configp->Get(L"strideShape"),
                           configp->Get(L"dimSharing"), configp->Get(L"dimPadding"), configp->Get(L"dimPadLower"), configp->Get(L"dimPadUpper"),
-                          configp->Get(L"transpose"), configp->Get(L"dimOutputShape"), ImageLayoutKindFrom(configp->Get(L"imageLayout")), configp->Get(L"maxTempMemSizeInSamples"), configp->Get(L"dimDilation"))
+                          configp->Get(L"transpose"), configp->Get(L"dimOutputShape"), ImageLayoutKindFrom(configp->Get(L"imageLayout")), configp->Get(L"maxTempMemSizeInSamples"), configp->Get(L"dimDilation"), configp->Get(L"groups"))
     {
         AttachInputsFromConfig(configp, GetExpectedNumInputs());
     }
@@ -510,7 +514,7 @@ public:
         {
             inputShape = GetInputSampleLayout(inputIdx);
             // infer reduction dimensions if not given
-            InferReductionDims(inputShape, inputShape);
+            InferReductionDims(inputShape, inputShape, m_groups);
             if (!m_transpose)
             {
                 outputShape = this->ComputeOutputShape(inputShape, m_dilation, /*ceilOutDim*/false, isFinalValidationPass);
